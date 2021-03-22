@@ -1,0 +1,34 @@
+#Restart the service only when there is some alteration in document root or conf file
+- hosts: "192.168.43.55"
+  tasks:
+  - name: "installing httpd service"
+    package:
+     name: "httpd"
+     state: present
+    register: httpd_instld
+  - name: "creating a directory for  document root"
+    file:
+     state: directory
+     dest: /var/www/abhi
+    register: doc_root
+  - name: "copying the conf file of  webserver"
+    copy: 
+     dest: "/etc/httpd/conf.d/abhi.conf"
+     src: "abhi.conf"
+    notify: restarting service
+  - name: "creating web page"
+    copy:
+     dest: "/var/www/abhi/index.html"
+     content: >
+             This site is written via Ansible
+    when: httpd_instld.failed == false
+  - name: service httpd start 
+    service: 
+      name: "httpd"
+      state: started
+  handlers:
+  - name: "restarting service"
+    service:
+     name: "httpd"
+     state: restarted
+
